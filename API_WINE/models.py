@@ -5,9 +5,6 @@ from django.utils import timezone
 from datetime import timedelta
 import datetime
 from django.core.validators import MinValueValidator
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-
 
 
 # Create your models here.
@@ -24,10 +21,10 @@ def validate_fecha_finalizacion(value):
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError("El correo es obligatorio")
+            raise ValueError('El correo es obligatorio')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
+        user.set_password(password)  # <-- encripta la contraseña
         user.save(using=self._db)
         return user
 
@@ -35,18 +32,16 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(email, password, **extra_fields)
-    
+
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
-    
-    password = models.CharField(max_length=20)
     celular = models.CharField(max_length=15)
     estado = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['']
+    REQUIRED_FIELDS = []  
 
     objects = UserManager()
 
@@ -54,24 +49,17 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
     
 class Cliente(models.Model):
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Cliente: {self.usuario.email}"
+    nombre = models.CharField(max_length=100, null=True, blank=True)
+    tipo_documento = models.CharField(max_length=20, null=True, blank=True)
+    numero_documento = models.CharField(max_length=20, null=True, blank=True)
+    celular = models.CharField(max_length=15, null=True, blank=True)
+    correo = models.EmailField(unique=True, null=True, blank=True) 
+    direccion = models.CharField(max_length=255, null=True, blank=True) 
 
 class Manicurista(models.Model):
-    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"Manicurista: {self.usuario.email}"
-    
-class Novedad(models.Model):
-    cita = models.OneToOneField('Cita', on_delete=models.CASCADE)
-    observaciones = models.TextField(blank=True, null=True)
-    fecha_registro = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Novedad de la cita {self.cita.id}"
+    nombres = models.CharField(max_length=100, null=True, blank=True)
+    apellidos = models.CharField(max_length=100, null=True, blank=True)
+    estado = models.BooleanField(default=True)
     
 class Servicio(models.Model):
     nombre = models.CharField(max_length=45)
@@ -114,8 +102,3 @@ class PasswordResetCode(models.Model):
 
     def __str__(self):
         return f"{self.email} - {self.code}"
-    
-@receiver(post_save, sender=Cita)
-def crear_novedad_al_finalizar_cita(sender, instance, **kwargs):
-    if instance.estado == 'finalizada' and not hasattr(instance, 'novedad'):
-        Novedad.objects.create(cita=instance)

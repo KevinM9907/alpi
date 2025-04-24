@@ -9,29 +9,18 @@ from django.contrib.auth import authenticate
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from rest_framework import generics
 from datetime import timedelta
 from django.utils.crypto import get_random_string
-from .models import PasswordResetCode, User, Cliente, Manicurista, Servicio, Cita, Novedad
-from .serializers import (UserSerializer, ClienteSerializer, ManicuristaSerializer, ServicioSerializer, CitaSerializer, NovedadSerializer, PasswordResetRequestSerializer, PasswordResetVerifySerializer)
+from .models import PasswordResetCode, User, Cliente, Manicurista, Servicio, Cita
+from .serializers import (UserSerializer, ClienteSerializer, ManicuristaSerializer, ServicioSerializer, CitaSerializer, PasswordResetRequestSerializer, PasswordResetVerifySerializer)
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
 
 User = get_user_model()
 
 def home(request):
     return JsonResponse({'mensaje': 'API WINE SPA funciona correctamente '})
-
-from rest_framework import viewsets
-from rest_framework.exceptions import ValidationError
-from django.db.models import Q
-from .models import User, Cliente, Manicurista, Servicio, Cita, Novedad
-from .serializers import (
-    UserSerializer, ClienteSerializer, ManicuristaSerializer,
-    ServicioSerializer, CitaSerializer, NovedadSerializer
-)
 
 # Vistas para User
 class UserViewSet(viewsets.ModelViewSet):
@@ -82,30 +71,8 @@ class CitaViewSet(viewsets.ModelViewSet):
         if cita.estado == 'finalizada':
             raise ValidationError("No se puede modificar una cita finalizada.")
 
-        if 'estado' in serializer.validated_data and serializer.validated_data['estado'] == 'finalizada':
-            cita = serializer.save()
-            Novedad.objects.create(cita=cita, observaciones="Cita finalizada.")
-        else:
-            serializer.save()
-
-# Novedad
-class NovedadViewSet(viewsets.ModelViewSet):
-    queryset = Novedad.objects.all()
-    serializer_class = NovedadSerializer
-
-    def perform_update(self, serializer):
-        novedad = self.get_object()
-        if novedad.cita.estado == 'finalizada':
-            raise ValidationError("No se puede modificar una novedad asociada a una cita finalizada.")
         serializer.save()
-
-    def perform_destroy(self, instance):
-        if instance.cita.estado == 'finalizada':
-            raise ValidationError("No se puede eliminar una novedad asociada a una cita finalizada.")
-        instance.delete()
-
-
-        
+     
 class PasswordResetRequestView(APIView):
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)

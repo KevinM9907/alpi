@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User, Cliente, Manicurista, Novedad, Servicio, Cita, PasswordResetCode
+from .models import User, Cliente, Manicurista, Servicio, Cita, PasswordResetCode
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -10,18 +10,15 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'password', 'celular', 'estado']
         
 class ClienteSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer()
-
     class Meta:
         model = Cliente
-        fields = ['id', 'usuario']
+        fields = ['id', 'nombre', 'tipo_documento', 'numero_documento', 'celular', 'correo', 'direccion']
 
 class ManicuristaSerializer(serializers.ModelSerializer):
-    usuario = UserSerializer()
-
     class Meta:
         model = Manicurista
-        fields = ['id', 'usuario']
+        fields = ['id', 'nombres', 'apellidos', 'estado']
+
         
 class ServicioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,15 +38,7 @@ class CitaSerializer(serializers.ModelSerializer):
         if data['hora_inicio'] >= data['hora_fin']:
             raise serializers.ValidationError("La hora de inicio debe ser antes que la hora de fin.")
         return data
-    
-class NovedadSerializer(serializers.ModelSerializer):
-    cita = CitaSerializer(read_only=True)
-
-    class Meta:
-        model = Novedad
-        fields = ['id', 'cita', 'observaciones', 'fecha_registro']
-        
-        
+         
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 

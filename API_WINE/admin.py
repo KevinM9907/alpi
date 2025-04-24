@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Cliente, Manicurista, Servicio, Cita, Novedad, PasswordResetCode
+from .models import User, Cliente, Manicurista, Servicio, Cita,PasswordResetCode
 
 # Registra el modelo User
 admin.site.register(User)
@@ -17,12 +17,6 @@ class CitaAdmin(admin.ModelAdmin):
     list_display = ('id', 'cliente', 'manicurista', 'servicio', 'fecha', 'hora_inicio', 'hora_fin', 'estado')
     list_filter = ('estado', 'fecha', 'manicurista')
     search_fields = ('cliente__usuario__email', 'manicurista__usuario__email', 'servicio__nombre')
-
-# Registra el modelo Novedad
-@admin.register(Novedad)
-class NovedadAdmin(admin.ModelAdmin):
-    list_display = ('id', 'cita', 'observaciones', 'fecha_registro')
-    search_fields = ('cita__id',)
 
 # Registra el modelo PasswordResetCode
 @admin.register(PasswordResetCode)

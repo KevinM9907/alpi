@@ -10,7 +10,6 @@ from .views import (
     ServicioViewSet,
     PasswordResetVerifyView,
     CitaViewSet,
-    NovedadViewSet,
     PasswordResetVerifyView, PasswordResetRequestView
 )
 
@@ -27,7 +26,6 @@ router.register(r'clientes', ClienteViewSet, basename='cliente')
 router.register(r'manicuristas', ManicuristaViewSet, basename='manicurista')
 router.register(r'servicios', ServicioViewSet, basename='servicio')
 router.register(r'citas', CitaViewSet, basename='cita')
-router.register(r'novedades', NovedadViewSet, basename='novedad')
 
 urlpatterns = [
     path('', include(router.urls)),  # Rutas de la API
